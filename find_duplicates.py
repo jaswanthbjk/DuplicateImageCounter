@@ -7,12 +7,20 @@ from PIL import Image
 from imaging_interview import compare_frames_change_detection
 from imaging_interview import preprocess_image_change_detection
 
+CONTOUR_THRESHOLD = 2750
+HASH_SIZE = 16
+
 
 class CountDuplicates:
     def __init__(self, image_dir, metric):
         self.image_dir_path = image_dir
         self.image_paths = self.get_image_files()
         self.metric = metric
+
+        if self.metric == 'abs_diff':
+            self.threshold = CONTOUR_THRESHOLD
+        elif self.metric == 'ahash':
+            self.threshold = HASH_SIZE
 
     def get_image_files(self):
         return [os.path.join(self.image_dir_path, image_name) for image_name
@@ -48,18 +56,18 @@ class CountDuplicates:
                     duplicates.append(image2_path)
         return duplicates
 
-    def get_duplicates(self):
+    def get_duplicates(self, threshold):
         if self.metric == 'ahash':
-            duplicates = self.duplicates_using_hash(hash_size=16)
+            duplicates = self.duplicates_using_hash(hash_size=threshold)
         elif self.metric == 'abs_diff':
-            duplicates = self.duplicates_using_absdiff(threshold=2750)
+            duplicates = self.duplicates_using_absdiff(threshold=threshold)
         else:
             print('Invalid Metric')
             return None
         return duplicates
 
     def __call__(self):
-        duplicates = self.get_duplicates()
+        duplicates = self.get_duplicates(self.threshold)
         return len(duplicates)
 
 
